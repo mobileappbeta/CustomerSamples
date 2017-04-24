@@ -76,15 +76,17 @@
                         {
                             key: "hb_pb_rubicon",
                             val: function(bidResponse) {
+			    var rate = 65;	
+			    //example with INR rate 	    
                             var cpm = bidResponse.cpm;
                             if (cpm <= 3.00) {
-                              return (Math.floor(cpm * 100) / 100).toFixed(2);
+                              return (Math.floor(cpm * rate * 100) / 100).toFixed(2);
                             } else if (cpm <= 8.00) {
-                              return (Math.floor(cpm * 20) / 20).toFixed(2);
+                              return (Math.floor(cpm * rate * 20) / 20).toFixed(2);
                             } else if (cpm <= 20.00) {
-                              return (Math.floor(cpm * 2) / 2).toFixed(2);
+                              return (Math.floor(cpm * rate * 2) / 2).toFixed(2);
                             } else {
-                              return '20.00';
+                              return ((20.00* rate).toFixed(2));
                             }
                                 //Here is the exchange rate function based on the dense granularity
                                 //A quicker way would have been to use "return bidResponse.pbMg * 65;"
