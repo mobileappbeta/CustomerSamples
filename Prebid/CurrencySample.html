@@ -1,0 +1,215 @@
+/* pbjs.initAdserver will be called either when all bids are back, or when the timeout is reached.  */
+
+        // Load GPT when timeout is reached.
+        setTimeout(initAdserver, PREBID_TIMEOUT);
+        var pbjs = pbjs || {};
+        pbjs.que = pbjs.que || [];
+        // Load the Prebid Javascript Library Async. We recommend loading it immediately after
+        // the initAdserver() and setTimeout functions.
+        (function() {
+            var d = document, pbs = d.createElement("script"), pro = d.location.protocol;
+            pbs.type = "text/javascript";
+            pbs.src = "http://central.bhaskar.com/js_ads/ads/header-bidding/bhaskar/prebid-c1x-rubi-pub-sekindo_aol.js?007";
+            var target = document.getElementsByTagName("head")[0];
+            target.insertBefore(pbs, target.firstChild);
+        })();
+
+        pbjs.que.push(function(){
+			//pbjs.enableSendAllBids();
+			//when passing the bidderSettings please do not include enableSendAllbids
+		   pbjs.setBidderSequence('random');
+            pbjs.bidderSettings = {
+                standard: {
+                    adserverTargeting: [{
+                        key: "hb_bidder",
+                        val: function(bidResponse) {
+                            return bidResponse.bidderCode;
+                        }
+                    },
+                        {
+                            key: "hb_adid",
+                            val: function(bidResponse) {
+                                return bidResponse.adId;
+                            }
+                        },
+                        {
+                            key: "hb_pb",
+                            val: function(bidResponse) {
+                                return bidResponse.pbLg;
+                            }
+                        }
+                    ]
+                },rubicon: {
+                   sendStandardTargeting: false,
+                    adserverTargeting: [
+                      {
+                          key: "hb_size_rubicon",
+                          val: function(bidResponse) {
+                              return bidResponse.size;
+                          }
+                      }, {
+                          key: "hb_adid_rubicon",
+                          val: function(bidResponse) {
+                              return bidResponse.adId;
+                          }
+                        },
+                        {
+                            key: "hb_pb_rubicon",
+                            val: function(bidResponse) {
+                                return bidResponse.pbMg * 65;
+                                //Here is the exchange rate
+                            }
+                        }
+                      
+                    ]
+                },'c1x': {
+                    pixelId: 1235021,
+                    siteId: 10367,
+                    endpoint: 'http://ht.c1exchange.com:8080/ht',
+
+                    adserverTargeting: [
+                        {
+                            key: "hb_bidder",
+                            val: function(bidResponse) {
+                                return bidResponse.bidderCode;
+                            }
+                        },
+                        {
+                            key: "hb_adid",
+                            val: function(bidResponse) {
+                                return bidResponse.adId;
+                            }
+                        },
+                        {
+                            key: "hb_pb",
+                            val: function(bidResponse) {
+                                return bidResponse.pbLg;
+                            }
+                        }
+                    ]
+                },aol: {
+                    sendStandardTargeting: false,
+					adserverTargeting: [
+                      {
+                          key: "hb_size_aol",
+                          val: function(bidResponse) {
+                              return bidResponse.size;
+                          }
+                      }, {
+                          key: "hb_adid_aol",
+                          val: function(bidResponse) {
+                              return bidResponse.adId;
+                          }
+                        },
+                        {
+                            key: "hb_pb_aol",
+                            val: function(bidResponse) {
+                                return bidResponse.pbLg;
+                            }
+                        }
+                      
+                    ]
+                 }
+            };
+
+
+            var adUnits = [
+                {
+                code: 'DFP_728_90_ATF',
+                sizes: [[728, 90]],
+                bids: [
+                    {
+                        bidder: 'c1x'
+                    },{
+						bidder: 'aol',
+						params: {
+						placement: 4485739,
+						network: '10211.1',
+						server: 'adserver.adtechus.com',
+						alias: 'DFP_728_90_ATF'
+						}
+					},{
+					    bidder: 'rubicon',params:{
+					    accountId: "9144",
+					    siteId: "87590",
+					    zoneId: "414266",
+			   
+					  }
+                    }
+                ]
+            },{
+                code: 'DFP_300_250_ATF',
+                sizes: [[300,600],[300,250]],
+                bids: [
+                    {
+                        bidder: 'c1x'
+                    },{
+						bidder: 'aol',
+						params: {
+						placement: 4485740,
+						network: '10211.1',
+						server: 'adserver.adtechus.com',
+						alias: 'DFP_300_250_ATF'
+						}
+					},{
+                         bidder: 'rubicon',params:{
+                         accountId: "9144",
+                         siteId: "87590",
+                         zoneId: "414266",
+                   		}
+                    }
+                ]
+            },{
+                code: 'DFP_160_600',
+                sizes: [[160, 600]],
+                bids: [
+                    {
+                        bidder: 'c1x'
+                    },{
+						bidder: 'aol',
+						params: {
+						placement: 4485741,
+						network: '10211.1',
+						server: 'adserver.adtechus.com',
+						alias: 'DFP_160_600'
+						}
+					},{
+                         bidder: 'rubicon',params:{
+                         accountId: "9144",
+                         siteId: "87590",
+                         zoneId: "414266",
+                        }
+                    }
+                ]
+            },{
+                code: 'DFP_300_250_BTF_2',
+                sizes: [[300,250]],
+                bids: [
+                    {
+                        bidder: 'c1x'
+                    }
+                ]
+            }];
+
+            //add the adUnits
+            pbjs.addAdUnits(adUnits);
+
+            //register a callback handler
+            pbjs.addCallback('adUnitBidsBack', function(adUnitCode){
+                console.log('ad unit bids back for : ' + adUnitCode);
+            });
+
+            /* Request bids for the added ad units. If adUnits or adUnitCodes are
+             not specified, the function will request bids for all added ad units.
+             */
+            pbjs.requestBids({
+
+                /* The bidsBack function will be called when either timeout is
+                 reached, or when all bids come back, whichever happens sooner.
+                 */
+                bidsBackHandler: function(bidResponses) {
+                    console.log('bidback handler called');
+                    initAdserver();
+                }
+            });
+        });
