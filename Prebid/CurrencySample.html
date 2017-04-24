@@ -1,23 +1,43 @@
+<html>
+<head>
+ <script type="text/javascript" src="//raw.githubusercontent.com/AntoineJac/CustomerSamples/master/Prebid/prebid.js" async></script>
+<script>
+
 /* pbjs.initAdserver will be called either when all bids are back, or when the timeout is reached.  */
 
         // Load GPT when timeout is reached.
-        setTimeout(initAdserver, PREBID_TIMEOUT);
+        var PREBID_TIMEOUT = 2000;
+        setTimeout(sendAdserverRequest, PREBID_TIMEOUT);
+
         var pbjs = pbjs || {};
         pbjs.que = pbjs.que || [];
+        var googletag = googletag || {};
+        googletag.cmd = googletag.cmd || [];
+        googletag.cmd.push(function() {
+        googletag.pubads().disableInitialLoad();
+        });
+
         // Load the Prebid Javascript Library Async. We recommend loading it immediately after
-        // the initAdserver() and setTimeout functions.
-        (function() {
-            var d = document, pbs = d.createElement("script"), pro = d.location.protocol;
-            pbs.type = "text/javascript";
-            pbs.src = "http://central.bhaskar.com/js_ads/ads/header-bidding/bhaskar/prebid-c1x-rubi-pub-sekindo_aol.js?007";
-            var target = document.getElementsByTagName("head")[0];
-            target.insertBefore(pbs, target.firstChild);
-        })();
+        // the initAdserver() asetTimeout(initAdserver, PREBID_TIMEOUT);
+
+
+        (function () {
+                var gads = document.createElement('script');
+                gads.async = true;
+                gads.type = 'text/javascript';
+                var useSSL = 'https:' == document.location.protocol;
+                gads.src = (useSSL ? 'https:' : 'http:') +
+                        '//www.googletagservices.com/tag/js/gpt.js';
+                var node = document.getElementsByTagName('script')[0];
+                node.parentNode.insertBefore(gads, node);
+            })();
 
         pbjs.que.push(function(){
-			//pbjs.enableSendAllBids();
-			//when passing the bidderSettings please do not include enableSendAllbids
+			
+			
 		   pbjs.setBidderSequence('random');
+       //pbjs.enableSendAllBids();
+       //With bidderSettings is better to remove enableSendAllBids() that could interfere with the standard KW.
             pbjs.bidderSettings = {
                 standard: {
                     adserverTargeting: [{
@@ -56,140 +76,57 @@
                         {
                             key: "hb_pb_rubicon",
                             val: function(bidResponse) {
-                                return bidResponse.pbMg * 65;
-                                //Here is the exchange rate
+                            var cpm = bidResponse.cpm;
+                            if (cpm <= 3.00) {
+                              return (Math.floor(cpm * 100) / 100).toFixed(2);
+                            } else if (cpm <= 8.00) {
+                              return (Math.floor(cpm * 20) / 20).toFixed(2);
+                            } else if (cpm <= 20.00) {
+                              return (Math.floor(cpm * 2) / 2).toFixed(2);
+                            } else {
+                              return '20.00';
+                            }
+                                //Here is the exchange rate function based on the dense granularity
+                                //A quicker way would have been to use "return bidResponse.pbMg * 65;"
                             }
                         }
                       
                     ]
-                },'c1x': {
-                    pixelId: 1235021,
-                    siteId: 10367,
-                    endpoint: 'http://ht.c1exchange.com:8080/ht',
-
-                    adserverTargeting: [
-                        {
-                            key: "hb_bidder",
-                            val: function(bidResponse) {
-                                return bidResponse.bidderCode;
-                            }
-                        },
-                        {
-                            key: "hb_adid",
-                            val: function(bidResponse) {
-                                return bidResponse.adId;
-                            }
-                        },
-                        {
-                            key: "hb_pb",
-                            val: function(bidResponse) {
-                                return bidResponse.pbLg;
-                            }
-                        }
-                    ]
-                },aol: {
-                    sendStandardTargeting: false,
-					adserverTargeting: [
-                      {
-                          key: "hb_size_aol",
-                          val: function(bidResponse) {
-                              return bidResponse.size;
-                          }
-                      }, {
-                          key: "hb_adid_aol",
-                          val: function(bidResponse) {
-                              return bidResponse.adId;
-                          }
-                        },
-                        {
-                            key: "hb_pb_aol",
-                            val: function(bidResponse) {
-                                return bidResponse.pbLg;
-                            }
-                        }
-                      
-                    ]
-                 }
+                }
             };
 
-
-            var adUnits = [
-                {
-                code: 'DFP_728_90_ATF',
-                sizes: [[728, 90]],
-                bids: [
-                    {
-                        bidder: 'c1x'
-                    },{
-						bidder: 'aol',
-						params: {
-						placement: 4485739,
-						network: '10211.1',
-						server: 'adserver.adtechus.com',
-						alias: 'DFP_728_90_ATF'
-						}
-					},{
-					    bidder: 'rubicon',params:{
-					    accountId: "9144",
-					    siteId: "87590",
-					    zoneId: "414266",
-			   
-					  }
-                    }
-                ]
-            },{
-                code: 'DFP_300_250_ATF',
-                sizes: [[300,600],[300,250]],
-                bids: [
-                    {
-                        bidder: 'c1x'
-                    },{
-						bidder: 'aol',
-						params: {
-						placement: 4485740,
-						network: '10211.1',
-						server: 'adserver.adtechus.com',
-						alias: 'DFP_300_250_ATF'
-						}
-					},{
-                         bidder: 'rubicon',params:{
-                         accountId: "9144",
-                         siteId: "87590",
-                         zoneId: "414266",
-                   		}
-                    }
-                ]
-            },{
-                code: 'DFP_160_600',
-                sizes: [[160, 600]],
-                bids: [
-                    {
-                        bidder: 'c1x'
-                    },{
-						bidder: 'aol',
-						params: {
-						placement: 4485741,
-						network: '10211.1',
-						server: 'adserver.adtechus.com',
-						alias: 'DFP_160_600'
-						}
-					},{
-                         bidder: 'rubicon',params:{
-                         accountId: "9144",
-                         siteId: "87590",
-                         zoneId: "414266",
+            var adUnits = [{
+                    code: 'DFP_ATF',
+                    sizes: [[300, 250], [300,600]],
+                    bids: [{
+                        bidder: 'appnexus',
+                        params: {
+                           placementId: '10433394'
                         }
-                    }
-                ]
-            },{
-                code: 'DFP_300_250_BTF_2',
-                sizes: [[300,250]],
-                bids: [
-                    {
-                        bidder: 'c1x'
-                    }
-                ]
-            }];
+                    },{
+                         bidder: 'rubicon',params:{
+                         accountId: "14062",
+                         siteId: "70608",
+                         zoneId: "335918",
+                      }
+                    }]
+                },{
+                    code: 'DFP_BTF',
+                    sizes: [[728, 90], [970, 90]],
+                    bids: [{
+                        bidder: 'appnexus',
+                        params: {
+                           placementId: '10433394'
+                        }
+                    },{
+                         bidder: 'rubicon',params:{
+                         accountId: "14062",
+                         siteId: "70608",
+                         zoneId: "335918",
+                      }
+                    }]
+                }];
+
 
             //add the adUnits
             pbjs.addAdUnits(adUnits);
@@ -201,15 +138,66 @@
 
             /* Request bids for the added ad units. If adUnits or adUnitCodes are
              not specified, the function will request bids for all added ad units.
-             */
+             */        
+
             pbjs.requestBids({
 
                 /* The bidsBack function will be called when either timeout is
                  reached, or when all bids come back, whichever happens sooner.
                  */
-                bidsBackHandler: function(bidResponses) {
-                    console.log('bidback handler called');
-                    initAdserver();
-                }
+                bidsBackHandler: sendAdserverRequest
             });
         });
+
+            function sendAdserverRequest() {
+                if (pbjs.adserverRequestSent) return;
+                pbjs.adserverRequestSent = true;
+                googletag.cmd.push(function() {
+                    pbjs.que.push(function() {
+                        pbjs.setTargetingForGPTAsync();
+                        googletag.pubads().refresh();
+
+                        var targetingParams = pbjs.getAdserverTargeting();
+                        var container = document.getElementById('container');
+                        container.innerHTML = JSON.stringify(targetingParams);
+                    });
+                });
+            }    
+
+
+</script>
+
+  <script>
+    googletag.cmd.push(function () {
+        googletag.defineSlot('/19968336/header-bid-tag-0', [[300, 250], [300, 600]], 'DFP_ATF').addService(googletag.pubads());
+
+        googletag.defineSlot('/19968336/header-bid-tag1', [[728, 90], [970, 90]], 'DFP_BTF').addService(googletag.pubads());
+
+        googletag.pubads().enableSingleRequest();
+        googletag.enableServices();
+    });
+  </script>
+
+  </head>
+
+
+<body>
+<h2>Prebid.js Test</h2>
+<div id="container">pbjs.getAdserverTargeting() Response</div>
+
+<h5>Div-1</h5>
+<div id='DFP_ATF'>
+    <script type='text/javascript'>
+        googletag.cmd.push(function() { googletag.display('DFP_ATF'); });
+    </script>
+</div>
+
+<h5>Div-2</h5>
+<div id='DFP_BTF'>
+    <script type='text/javascript'>
+        googletag.cmd.push(function() { googletag.display('DFP_BTF'); });
+    </script>
+</div>
+
+</body>
+</html>
