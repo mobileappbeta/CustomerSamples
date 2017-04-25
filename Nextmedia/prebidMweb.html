@@ -1,0 +1,284 @@
+	<html>
+<head>
+
+	<script type="text/javascript" src="//raw.githubusercontent.com/AntoineJac/CustomerSamples/master/Prebid/prebid.js" async>
+	</script>
+
+
+<!-- DFP ad init -->
+		<script type='text/javascript'>
+
+			var PREBID_TIMEOUT = 2000;
+	        setTimeout(sendAdserverRequest, PREBID_TIMEOUT);
+
+	        var pbjs = pbjs || {};
+	        pbjs.que = pbjs.que || [];
+	        var googletag = googletag || {};
+	        googletag.cmd = googletag.cmd || [];
+	        googletag.cmd.push(function() {
+	        googletag.pubads().disableInitialLoad();
+	        });
+
+
+			(function() {
+				var gads = document.createElement('script');
+				gads.async = true;
+				gads.type = 'text/javascript';
+				var useSSL = 'https:' == document.location.protocol;
+				gads.src = ( useSSL ? 'https:' : 'http:') + '//www.googletagservices.com/tag/js/gpt.js';
+				var node = document.getElementsByTagName('script')[0];
+				node.parentNode.insertBefore(gads, node);
+			})();
+
+			 pbjs.que.push(function(){
+			
+			
+		   pbjs.setBidderSequence('random');
+       //pbjs.enableSendAllBids();
+       //With bidderSettings is better to remove enableSendAllBids() that could interfere with the standard KW.
+            pbjs.bidderSettings = {
+                standard: {
+                    adserverTargeting: [{
+                        key: "hb_bidder",
+                        val: function(bidResponse) {
+                            return bidResponse.bidderCode;
+                        }
+                    },
+                        {
+                            key: "hb_adid",
+                            val: function(bidResponse) {
+                                return bidResponse.adId;
+                            }
+                        },
+                        {
+                            key: "hb_pb",
+                            val: function(bidResponse) {
+                                return bidResponse.pbLg;
+                            }
+                        }
+                    ]
+                },rubicon: {
+                   sendStandardTargeting: false,
+                    adserverTargeting: [
+                      {
+                          key: "hb_size_rubicon",
+                          val: function(bidResponse) {
+                              return bidResponse.size;
+                          }
+                      }, {
+                          key: "hb_adid_rubicon",
+                          val: function(bidResponse) {
+                              return bidResponse.adId;
+                          }
+                        },
+                        {
+                            key: "hb_pb_rubicon",
+                            val: function(bidResponse) {
+                            var cpm = bidResponse.cpm;
+                            if (cpm <= 3.00) {
+                              return (Math.floor(cpm * 100) / 100).toFixed(2);
+                            } else if (cpm <= 8.00) {
+                              return (Math.floor(cpm * 20) / 20).toFixed(2);
+                            } else if (cpm <= 20.00) {
+                              return (Math.floor(cpm * 2) / 2).toFixed(2);
+                            } else {
+                              return '20.00';
+                            }
+                                //Here is the exchange rate function based on the dense granularity
+                                //A quicker way would have been to use "return bidResponse.pbMg * 65;"
+                            }
+                        }
+                      
+                    ]
+                }
+            };
+
+            var adUnits = [{
+                    code: 'ad-FixedBanner1',
+                    sizes: [[320, 50], [300,250]],
+                    bids: [{
+                        bidder: 'appnexus',
+                        params: {
+                           placementId: '10433394'
+                        }
+                    },{
+                         bidder: 'rubicon',params:{
+                         accountId: "14062",
+                         siteId: "70608",
+                         zoneId: "335918",
+                      }
+                    }]
+                },{
+                    code: 'ad-FixedBanner2',
+                    sizes: [[320, 50], [300,250]],
+                    bids: [{
+                        bidder: 'appnexus',
+                        params: {
+                           placementId: '10433394'
+                        }
+                    },{
+                         bidder: 'rubicon',params:{
+                         accountId: "14062",
+                         siteId: "70608",
+                         zoneId: "335918",
+                      }
+                    }]
+                },{
+                    code: 'ad-FixedBanner3',
+                    sizes: [[320, 50], [300,250]],
+                    bids: [{
+                        bidder: 'appnexus',
+                        params: {
+                           placementId: '10433394'
+                        }
+                    },{
+                         bidder: 'rubicon',params:{
+                         accountId: "14062",
+                         siteId: "70608",
+                         zoneId: "335918",
+                      }
+                    }]
+                },{
+                    code: 'ad-FixedBanner4',
+                    sizes: [[320, 50], [300,250]],
+                    bids: [{
+                        bidder: 'appnexus',
+                        params: {
+                           placementId: '10433394'
+                        }
+                    },{
+                         bidder: 'rubicon',params:{
+                         accountId: "14062",
+                         siteId: "70608",
+                         zoneId: "335918",
+                      }
+                    }]
+                }];
+
+
+            //add the adUnits
+            pbjs.addAdUnits(adUnits);
+
+            //register a callback handler
+            pbjs.addCallback('adUnitBidsBack', function(adUnitCode){
+                console.log('ad unit bids back for : ' + adUnitCode);
+            });
+
+            /* Request bids for the added ad units. If adUnits or adUnitCodes are
+             not specified, the function will request bids for all added ad units.
+             */        
+
+            pbjs.requestBids({
+
+                /* The bidsBack function will be called when either timeout is
+                 reached, or when all bids come back, whichever happens sooner.
+                 */
+                bidsBackHandler: sendAdserverRequest
+            });
+                 });
+
+            function sendAdserverRequest() {
+                if (pbjs.adserverRequestSent) return;
+                pbjs.adserverRequestSent = true;
+                googletag.cmd.push(function() {
+                    pbjs.que.push(function() {
+                        pbjs.setTargetingForGPTAsync();
+                        googletag.pubads().refresh();
+
+                        var targetingParams = pbjs.getAdserverTargeting();
+                        var container = document.getElementById('container');
+                        container.innerHTML = JSON.stringify(targetingParams);
+                    });
+                });
+            }    
+
+		</script>
+
+		<script id="geo" src="hkm/js/geo.js?20170111">
+        {
+			"host": "http://geodds.api.nextmedia.com/geo_api",
+			"buster": "fbede6cf9b295b68d9825afb1befb134",
+			"country_code": [
+				"hk",
+				"us",
+				"ca"
+			],
+			"state_code": [
+				"ny",
+				"ca"
+			],
+			"district_code": [
+				501,
+				803,
+				807
+			],
+			"expiry": 86400000,
+			"sync": true
+		}
+        </script>
+		<script type='text/javascript'>
+					googletag.cmd.push(function() {
+																									var adunit = '/7350/AppleDaily_MobileSite/RealtimeNews_Local/FixedBanner1';
+							googletag.defineSlot(adunit, [[320, 50],[300, 250]], 'ad-FixedBanner1').addService(googletag.pubads());
+
+																			var adunit1 = '/7350/AppleDaily_MobileSite/RealtimeNews_Local/FixedBanner2';
+							googletag.defineSlot(adunit1, [[320, 50],[300, 250]], 'ad-FixedBanner2').addService(googletag.pubads());
+
+																			var adunit2 = '/7350/AppleDaily_MobileSite/RealtimeNews_Local/FixedBanner3';
+							googletag.defineSlot(adunit2, [[320, 50],[300, 250]], 'ad-FixedBanner3').addService(googletag.pubads());
+
+																			var adunit3 = '/7350/AppleDaily_MobileSite/RealtimeNews_Local/FixedBanner4';
+							googletag.defineSlot(adunit3, [[320, 50],[300, 250]], 'ad-FixedBanner4').addService(googletag.pubads());
+
+						
+						
+						
+															if ('localStorage' in window)
+					(function(l) {
+						var d = l.getItem('localeD'),
+						    cc = l.getItem('localeCC'),
+						    s = l.getItem('localeS');
+						if (d !== null)
+							googletag.pubads().setTargeting('D', d);
+						if (cc !== null)
+							googletag.pubads().setTargeting('CC', cc);
+						if (s !== null)
+							googletag.pubads().setTargeting('S', s);
+					})(localStorage);
+
+					/* Jquery require for this part!
+					
+					if($.cookie("googtrans") == "/zh-CN/zh-TW")
+                    {
+                        googletag.pubads().setTargeting('L', 'TC');
+                    }
+                    else if($.cookie("googtrans") == "/zh-CN/zh-CN")
+                    {
+                        googletag.pubads().setTargeting('L', 'SC');
+                    }
+                    else
+                    {
+                        googletag.pubads().setTargeting('L', 'TC');
+                    }
+					*/
+				
+				googletag.pubads().enableSingleRequest();
+				googletag.pubads().collapseEmptyDivs();
+				googletag.enableServices();
+				});
+
+</script>
+
+
+  </head>
+
+
+<body>
+	<div id='ad-FixedBanner1'><script type='text/javascript'>googletag.cmd.push(function() { googletag.display('ad-FixedBanner1'); });</script></div>
+	<div id='ad-FixedBanner2'><script type='text/javascript'>googletag.cmd.push(function() { googletag.display('ad-FixedBanner2'); });</script></div>
+	<div id='ad-FixedBanner3'><script type='text/javascript'>googletag.cmd.push(function() { googletag.display('ad-FixedBanner3'); });</script></div>
+	<div id='ad-FixedBanner4'><script type='text/javascript'>googletag.cmd.push(function() { googletag.display('ad-FixedBanner4'); });</script></div>
+
+</body>
+</html>
+
