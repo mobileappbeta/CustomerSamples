@@ -17,7 +17,7 @@ page.setContent(expectedContent, expectedLocation);
 var outObject = 0;
 page.onResourceRequested = function(request) {
 	outObject +=1;
-  //  console.log('Request ' + JSON.stringify(request, undefined, 4));
+    //console.log('Request ' + JSON.stringify(request, undefined, 4));
 };
 page.onResourceReceived = function(response) {
  // console.log('Receive ' + JSON.stringify(response, undefined, 4));
@@ -28,12 +28,14 @@ page.onResourceReceived = function(response) {
 page.onLoadFinished = function(status) {
 //var content = page.content;
 //console.log('Content: ' + content);
-   
-   console.log("Status: " + status);
+   setTimeout(function() {
+   console.log("Status of the request is: " + status);
   	if(status === "success") {
-    console.log(outObject);
+    console.log("The number of call out from this ad is: "+ outObject);
   }
-  phantom.exit();
+  phantom.exit();},2000);
+//SetTimeout use to be sure all ressource are made
+
 };
 
     } 
